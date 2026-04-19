@@ -1,6 +1,8 @@
 # ▸ md Editor
 
 A lightweight, professional Markdown editor with live preview, modular architecture, and a focused writing experience.
+[![GitHub stars](https://img.shields.io/github/stars/kurtwp/template-generator-2d?style=flat-square&color=gold)](https://github.com/kurtwp/template-generator-2d/stargazers)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/kurtwp/template-generator-2d/pulls)
 
 ![Preview Placeholder](markdown1.png)
 
