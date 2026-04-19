@@ -2,7 +2,7 @@
 
 A lightweight, professional Markdown editor with live preview, modular architecture, and a focused writing experience.
 
-![Preview Placeholder](https://via.placeholder.com/1200x600/1a1d27/6c8aff?text=Markdown+Editor+Pro+Interface)
+![Preview Placeholder](markdown1.png)
 
 ## 🚀 One-Sentence Value Proposition
 The fastest way to write, preview, and organize markdown documents in a clean, modular, and scalable environment.
