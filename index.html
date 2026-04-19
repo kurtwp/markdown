@@ -1,479 +1,629 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Markdown Editor</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
-<style>
-  :root {
-    --bg: #0f1117;
-    --surface: #1a1d27;
-    --surface2: #22263a;
-    --border: #2e3450;
-    --accent: #6c8aff;
-    --accent2: #a78bfa;
-    --text: #e2e8f0;
-    --text-muted: #7c85a6;
-    --text-dim: #4a5278;
-    --success: #34d399;
-    --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
-    --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
-    --font-serif: 'Merriweather', 'Georgia', serif;
-    --radius: 8px;
-    --toolbar-h: 52px;
-    --statusbar-h: 28px;
-  }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markdown Editor</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --surface: #1a1d27;
+      --surface2: #22263a;
+      --border: #2e3450;
+      --accent: #6c8aff;
+      --accent2: #a78bfa;
+      --text: #e2e8f0;
+      --text-muted: #7c85a6;
+      --text-dim: #4a5278;
+      --success: #34d399;
+      --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+      --font-sans: 'Inter', 'Segoe UI', system-ui, sans-serif;
+      --font-serif: 'Merriweather', 'Georgia', serif;
+      --radius: 8px;
+      --toolbar-h: 52px;
+      --statusbar-h: 28px;
+    }
 
-  /* LIGHT THEME */
-  [data-theme="light"] {
-    --bg: #f5f6fa;
-    --surface: #ffffff;
-    --surface2: #edf0f8;
-    --border: #d5daf0;
-    --accent: #4c6ef5;
-    --accent2: #7c3aed;
-    --text: #1a1d2e;
-    --text-muted: #4a5068;
-    --text-dim: #9ea4c0;
-    --success: #10b981;
-  }
+    /* LIGHT THEME */
+    [data-theme="light"] {
+      --bg: #f5f6fa;
+      --surface: #ffffff;
+      --surface2: #edf0f8;
+      --border: #d5daf0;
+      --accent: #4c6ef5;
+      --accent2: #7c3aed;
+      --text: #1a1d2e;
+      --text-muted: #4a5068;
+      --text-dim: #9ea4c0;
+      --success: #10b981;
+    }
 
-  /* Smooth theme transitions */
-  body, #toolbar, #statusbar, #preview, #editor,
-  .pane-label, .tb-btn, .copy-btn, .view-btn, .view-toggle,
-  #find-bar, #divider {
-    transition: background 0.25s ease, color 0.25s ease,
-                border-color 0.25s ease;
-  }
+    /* Smooth theme transitions */
+    body,
+    #toolbar,
+    #statusbar,
+    #preview,
+    #editor,
+    .pane-label,
+    .tb-btn,
+    .copy-btn,
+    .view-btn,
+    .view-toggle,
+    #find-bar,
+    #divider {
+      transition: background 0.25s ease, color 0.25s ease,
+        border-color 0.25s ease;
+    }
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
-  body {
-    font-family: var(--font-sans);
-    background: var(--bg);
-    color: var(--text);
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
 
-  /* TOOLBAR */
-  #toolbar {
-    height: var(--toolbar-h);
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 4px;
-    flex-shrink: 0;
-    position: relative;
-  }
+    /* TOOLBAR */
+    #toolbar {
+      height: var(--toolbar-h);
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 4px;
+      flex-shrink: 0;
+      position: relative;
+    }
 
-  .toolbar-brand {
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    margin-right: 12px;
-    font-family: var(--font-mono);
-  }
+    .toolbar-brand {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-right: 12px;
+      font-family: var(--font-mono);
+    }
 
-  .toolbar-sep {
-    width: 1px;
-    height: 20px;
-    background: var(--border);
-    margin: 0 6px;
-  }
+    .toolbar-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 6px;
+    }
 
-  .tb-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 5px 8px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-family: var(--font-mono);
-    font-weight: 600;
-    transition: background 0.15s, color 0.15s;
-    white-space: nowrap;
-  }
-  .tb-btn:hover { background: var(--surface2); color: var(--text); }
-  .tb-btn.active { background: var(--surface2); color: var(--accent); }
-  .tb-btn[title]::after { content: attr(title); }
+    .tb-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 5px 8px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
 
-  .tb-icon { font-style: normal; }
+    .tb-btn:hover {
+      background: var(--surface2);
+      color: var(--text);
+    }
 
-  .toolbar-right {
-    margin-left: auto;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+    .tb-btn.active {
+      background: var(--surface2);
+      color: var(--accent);
+    }
 
-  .view-toggle {
-    display: flex;
-    gap: 2px;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 3px;
-  }
+    .tb-btn[title]::after {
+      content: attr(title);
+    }
 
-  .view-btn {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: 4px 10px;
-    border-radius: 5px;
-    font-size: 11px;
-    font-family: var(--font-sans);
-    font-weight: 500;
-    letter-spacing: 0.04em;
-    transition: background 0.15s, color 0.15s;
-  }
-  .view-btn.active { background: var(--surface2); color: var(--accent); }
-  .view-btn:hover:not(.active) { color: var(--text); }
+    .tb-icon {
+      font-style: normal;
+    }
 
-  .copy-btn {
-    background: var(--accent);
-    border: none;
-    color: #fff;
-    cursor: pointer;
-    padding: 5px 14px;
-    border-radius: var(--radius);
-    font-size: 12px;
-    font-weight: 600;
-    letter-spacing: 0.03em;
-    transition: opacity 0.15s, transform 0.1s;
-  }
-  .copy-btn:hover { opacity: 0.85; }
-  .copy-btn:active { transform: scale(0.97); }
+    .toolbar-right {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
 
-  /* MAIN PANES */
-  #workspace {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
-    position: relative;
-  }
+    .view-toggle {
+      display: flex;
+      gap: 2px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 3px;
+    }
 
-  .pane {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    transition: flex 0.25s ease;
-    position: relative;
-  }
+    .view-btn {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 10px;
+      border-radius: 5px;
+      font-size: 11px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      letter-spacing: 0.04em;
+      transition: background 0.15s, color 0.15s;
+    }
 
-  .pane-label {
-    font-size: 10px;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: var(--text-dim);
-    padding: 8px 16px 6px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    flex-shrink: 0;
-  }
+    .view-btn.active {
+      background: var(--surface2);
+      color: var(--accent);
+    }
 
-  #divider {
-    width: 5px;
-    background: var(--border);
-    cursor: col-resize;
-    flex-shrink: 0;
-    transition: background 0.15s;
-    position: relative;
-    z-index: 10;
-  }
-  #divider:hover, #divider.dragging { background: var(--accent); }
+    .view-btn:hover:not(.active) {
+      color: var(--text);
+    }
 
-  /* EDITOR */
-  #editor-pane { border-right: none; }
+    .copy-btn {
+      background: var(--accent);
+      border: none;
+      color: #fff;
+      cursor: pointer;
+      padding: 5px 14px;
+      border-radius: var(--radius);
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      transition: opacity 0.15s, transform 0.1s;
+    }
 
-  #editor {
-    flex: 1;
-    background: var(--bg);
-    color: var(--text);
-    border: none;
-    outline: none;
-    padding: 24px 28px;
-    font-family: var(--font-mono);
-    font-size: 14px;
-    line-height: 1.75;
-    resize: none;
-    overflow-y: auto;
-    tab-size: 2;
-    caret-color: var(--accent);
-    letter-spacing: 0.01em;
-  }
+    .copy-btn:hover {
+      opacity: 0.85;
+    }
 
-  #editor::placeholder { color: var(--text-dim); }
-  #editor::-webkit-scrollbar { width: 6px; }
-  #editor::-webkit-scrollbar-track { background: transparent; }
-  #editor::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .copy-btn:active {
+      transform: scale(0.97);
+    }
 
-  /* PREVIEW */
-  #preview-pane {}
+    /* MAIN PANES */
+    #workspace {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+    }
 
-  #preview {
-    flex: 1;
-    padding: 24px 28px;
-    overflow-y: auto;
-    background: var(--bg);
-    font-family: var(--font-serif);
-    font-size: 15px;
-    line-height: 1.8;
-    color: var(--text);
-  }
+    .pane {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: flex 0.25s ease;
+      position: relative;
+    }
 
-  #preview::-webkit-scrollbar { width: 6px; }
-  #preview::-webkit-scrollbar-track { background: transparent; }
-  #preview::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .pane-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 8px 16px 6px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
 
-  /* Markdown preview styles */
-  #preview h1, #preview h2, #preview h3,
-  #preview h4, #preview h5, #preview h6 {
-    font-family: var(--font-sans);
-    font-weight: 700;
-    color: var(--text);
-    margin: 1.5em 0 0.5em;
-    line-height: 1.3;
-  }
-  #preview h1 { font-size: 2em; border-bottom: 1px solid var(--border); padding-bottom: 0.3em; }
-  #preview h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 0.2em; }
-  #preview h3 { font-size: 1.2em; }
-  #preview h1:first-child, #preview h2:first-child { margin-top: 0; }
+    #divider {
+      width: 5px;
+      background: var(--border);
+      cursor: col-resize;
+      flex-shrink: 0;
+      transition: background 0.15s;
+      position: relative;
+      z-index: 10;
+    }
 
-  #preview p { margin: 0.8em 0; }
-  #preview a { color: var(--accent); text-decoration: none; }
-  #preview a:hover { text-decoration: underline; }
+    #divider:hover,
+    #divider.dragging {
+      background: var(--accent);
+    }
 
-  #preview code {
-    font-family: var(--font-mono);
-    font-size: 0.85em;
-    background: var(--surface2);
-    color: var(--accent2);
-    padding: 2px 6px;
-    border-radius: 4px;
-    border: 1px solid var(--border);
-  }
+    /* EDITOR */
+    #editor-pane {
+      border-right: none;
+    }
 
-  #preview pre {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 16px;
-    overflow-x: auto;
-    margin: 1em 0;
-  }
-  #preview pre code {
-    background: none;
-    border: none;
-    padding: 0;
-    color: var(--text);
-    font-size: 13px;
-  }
+    #editor {
+      flex: 1;
+      background: var(--bg);
+      color: var(--text);
+      border: none;
+      outline: none;
+      padding: 24px 28px;
+      font-family: var(--font-mono);
+      font-size: 14px;
+      line-height: 1.75;
+      resize: none;
+      overflow-y: auto;
+      tab-size: 2;
+      caret-color: var(--accent);
+      letter-spacing: 0.01em;
+    }
 
-  #preview blockquote {
-    border-left: 3px solid var(--accent);
-    padding: 8px 16px;
-    margin: 1em 0;
-    background: var(--surface);
-    border-radius: 0 var(--radius) var(--radius) 0;
-    color: var(--text-muted);
-    font-style: italic;
-  }
+    #editor::placeholder {
+      color: var(--text-dim);
+    }
 
-  #preview ul, #preview ol {
-    padding-left: 1.5em;
-    margin: 0.8em 0;
-  }
-  #preview li { margin: 0.3em 0; }
+    #editor::-webkit-scrollbar {
+      width: 6px;
+    }
 
-  #preview table {
-    border-collapse: collapse;
-    width: 100%;
-    margin: 1em 0;
-    font-family: var(--font-sans);
-    font-size: 14px;
-  }
-  #preview th {
-    background: var(--surface2);
-    color: var(--accent);
-    font-weight: 600;
-    text-align: left;
-    padding: 10px 14px;
-    border: 1px solid var(--border);
-  }
-  #preview td {
-    padding: 8px 14px;
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-  #preview tr:nth-child(even) td { background: var(--surface); }
+    #editor::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-  #preview hr {
-    border: none;
-    border-top: 1px solid var(--border);
-    margin: 2em 0;
-  }
+    #editor::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
 
-  #preview img {
-    max-width: 100%;
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-  }
+    /* PREVIEW */
+    #preview-pane {}
 
-  /* View modes */
-  body.view-editor #divider,
-  body.view-editor #preview-pane { display: none; }
-  body.view-editor #editor-pane { flex: 1; }
+    #preview {
+      flex: 1;
+      padding: 24px 28px;
+      overflow-y: auto;
+      background: var(--bg);
+      font-family: var(--font-serif);
+      font-size: 15px;
+      line-height: 1.8;
+      color: var(--text);
+    }
 
-  body.view-preview #divider,
-  body.view-preview #editor-pane { display: none; }
-  body.view-preview #preview-pane { flex: 1; }
+    #preview::-webkit-scrollbar {
+      width: 6px;
+    }
 
-  /* STATUS BAR */
-  #statusbar {
-    height: var(--statusbar-h);
-    background: var(--surface);
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 16px;
-    gap: 20px;
-    font-family: var(--font-mono);
-    font-size: 11px;
-    color: var(--text-dim);
-    flex-shrink: 0;
-  }
+    #preview::-webkit-scrollbar-track {
+      background: transparent;
+    }
 
-  .stat { display: flex; align-items: center; gap: 5px; }
-  .stat-val { color: var(--text-muted); }
-  .stat-accent { color: var(--accent); }
+    #preview::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
 
-  .saved-indicator {
-    margin-left: auto;
-    color: var(--success);
-    font-size: 10px;
-    letter-spacing: 0.05em;
-    opacity: 0;
-    transition: opacity 0.3s;
-  }
-  .saved-indicator.show { opacity: 1; }
+    /* Markdown preview styles */
+    #preview h1,
+    #preview h2,
+    #preview h3,
+    #preview h4,
+    #preview h5,
+    #preview h6 {
+      font-family: var(--font-sans);
+      font-weight: 700;
+      color: var(--text);
+      margin: 1.5em 0 0.5em;
+      line-height: 1.3;
+    }
 
-  /* FIND BAR */
-  #find-bar {
-    display: none;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 16px;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-  #find-bar.open { display: flex; }
-  #find-input {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 4px 10px;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-family: var(--font-mono);
-    outline: none;
-    width: 220px;
-  }
-  #find-input:focus { border-color: var(--accent); }
-  .find-close {
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    font-size: 16px;
-    line-height: 1;
-    padding: 0 4px;
-  }
-  .find-close:hover { color: var(--text); }
-</style>
+    #preview h1 {
+      font-size: 2em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.3em;
+    }
+
+    #preview h2 {
+      font-size: 1.5em;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.2em;
+    }
+
+    #preview h3 {
+      font-size: 1.2em;
+    }
+
+    #preview h1:first-child,
+    #preview h2:first-child {
+      margin-top: 0;
+    }
+
+    #preview p {
+      margin: 0.8em 0;
+    }
+
+    #preview a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    #preview a:hover {
+      text-decoration: underline;
+    }
+
+    #preview code {
+      font-family: var(--font-mono);
+      font-size: 0.85em;
+      background: var(--surface2);
+      color: var(--accent2);
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+
+    #preview pre {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      overflow-x: auto;
+      margin: 1em 0;
+    }
+
+    #preview pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--text);
+      font-size: 13px;
+    }
+
+    #preview blockquote {
+      border-left: 3px solid var(--accent);
+      padding: 8px 16px;
+      margin: 1em 0;
+      background: var(--surface);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      color: var(--text-muted);
+      font-style: italic;
+    }
+
+    #preview ul,
+    #preview ol {
+      padding-left: 1.5em;
+      margin: 0.8em 0;
+    }
+
+    #preview li {
+      margin: 0.3em 0;
+    }
+
+    #preview table {
+      border-collapse: collapse;
+      width: 100%;
+      margin: 1em 0;
+      font-family: var(--font-sans);
+      font-size: 14px;
+    }
+
+    #preview th {
+      background: var(--surface2);
+      color: var(--accent);
+      font-weight: 600;
+      text-align: left;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+    }
+
+    #preview td {
+      padding: 8px 14px;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+
+    #preview tr:nth-child(even) td {
+      background: var(--surface);
+    }
+
+    #preview hr {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 2em 0;
+    }
+
+    #preview img {
+      max-width: 100%;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+    }
+
+    /* View modes */
+    body.view-editor #divider,
+    body.view-editor #preview-pane {
+      display: none;
+    }
+
+    body.view-editor #editor-pane {
+      flex: 1;
+    }
+
+    body.view-preview #divider,
+    body.view-preview #editor-pane {
+      display: none;
+    }
+
+    body.view-preview #preview-pane {
+      flex: 1;
+    }
+
+    /* STATUS BAR */
+    #statusbar {
+      height: var(--statusbar-h);
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 20px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-dim);
+      flex-shrink: 0;
+    }
+
+    .stat {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .stat-val {
+      color: var(--text-muted);
+    }
+
+    .stat-accent {
+      color: var(--accent);
+    }
+
+    .saved-indicator {
+      margin-left: auto;
+      color: var(--success);
+      font-size: 10px;
+      letter-spacing: 0.05em;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .saved-indicator.show {
+      opacity: 1;
+    }
+
+    /* FIND BAR */
+    #find-bar {
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    #find-bar.open {
+      display: flex;
+    }
+
+    #find-input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 10px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-family: var(--font-mono);
+      outline: none;
+      width: 220px;
+    }
+
+    #find-input:focus {
+      border-color: var(--accent);
+    }
+
+    .find-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 4px;
+    }
+
+    .find-close:hover {
+      color: var(--text);
+    }
+  </style>
 </head>
+
 <body class="view-split">
 
-<div id="toolbar">
-  <span class="toolbar-brand">&#9656; md</span>
-  <div class="toolbar-sep"></div>
+  <div id="toolbar">
+    <span class="toolbar-brand">&#9656; md</span>
+    <div class="toolbar-sep"></div>
 
-  <!-- Heading buttons -->
-  <button class="tb-btn" data-action="insertAround" data-arg1="# "  data-arg2="">H1</button>
-  <button class="tb-btn" data-action="insertAround" data-arg1="## " data-arg2="">H2</button>
-  <button class="tb-btn" data-action="insertAround" data-arg1="### " data-arg2="">H3</button>
+    <!-- Heading buttons -->
+    <button class="tb-btn" data-action="insertAround" data-arg1="# " data-arg2="">H1</button>
+    <button class="tb-btn" data-action="insertAround" data-arg1="## " data-arg2="">H2</button>
+    <button class="tb-btn" data-action="insertAround" data-arg1="### " data-arg2="">H3</button>
 
-  <div class="toolbar-sep"></div>
+    <div class="toolbar-sep"></div>
 
-  <button class="tb-btn" data-action="insertAround" data-arg1="**" data-arg2="**" style="font-weight:800">B</button>
-  <button class="tb-btn" data-action="insertAround" data-arg1="*"  data-arg2="*"  style="font-style:italic">I</button>
-  <button class="tb-btn" data-action="insertAround" data-arg1="~~" data-arg2="~~" style="text-decoration:line-through">S</button>
-  <button class="tb-btn" data-action="insertAround" data-arg1="`"  data-arg2="`"  style="font-family:monospace">&lt;/&gt;</button>
+    <button class="tb-btn" data-action="insertAround" data-arg1="**" data-arg2="**" style="font-weight:800">B</button>
+    <button class="tb-btn" data-action="insertAround" data-arg1="*" data-arg2="*" style="font-style:italic">I</button>
+    <button class="tb-btn" data-action="insertAround" data-arg1="~~" data-arg2="~~"
+      style="text-decoration:line-through">S</button>
+    <button class="tb-btn" data-action="insertAround" data-arg1="`" data-arg2="`"
+      style="font-family:monospace">&lt;/&gt;</button>
 
-  <div class="toolbar-sep"></div>
+    <div class="toolbar-sep"></div>
 
-  <button class="tb-btn" data-action="insertLine" data-arg1="- ">&#8226; List</button>
-  <button class="tb-btn" data-action="insertLine" data-arg1="1. ">1. List</button>
-  <button class="tb-btn" data-action="insertLine" data-arg1="> ">&#10077; Quote</button>
-  <button class="tb-btn" data-action="insertFence">&#9635; Code</button>
-  <button class="tb-btn" data-action="insertLine" data-arg1="---">&#8213; HR</button>
-  <button class="tb-btn" data-action="insertLink">&#128279; Link</button>
-  <button class="tb-btn" id="clear-btn" style="color:var(--text-dim);">&#10006; Clear</button>
+    <button class="tb-btn" data-action="insertLine" data-arg1="- ">&#8226; List</button>
+    <button class="tb-btn" data-action="insertLine" data-arg1="1. ">1. List</button>
+    <button class="tb-btn" data-action="insertLine" data-arg1="> ">&#10077; Quote</button>
+    <button class="tb-btn" data-action="insertFence">&#9635; Code</button>
+    <button class="tb-btn" data-action="insertLine" data-arg1="---">&#8213; HR</button>
+    <button class="tb-btn" data-action="insertLink">&#128279; Link</button>
+    <button class="tb-btn" id="clear-btn" style="color:var(--text-dim);">&#10006; Clear</button>
 
-  <div class="toolbar-right" style="margin-left:8px">
-  <!-- View toggle -->
-    <div class="view-toggle">
-      <button class="view-btn" id="vbtn-editor">Editor</button>
-      <button class="view-btn active" id="vbtn-split">Split</button>
-      <button class="view-btn" id="vbtn-preview">Preview</button>
+    <div class="toolbar-right" style="margin-left:8px">
+      <!-- View toggle -->
+      <div class="view-toggle">
+        <button class="view-btn" id="vbtn-editor">Editor</button>
+        <button class="view-btn active" id="vbtn-split">Split</button>
+        <button class="view-btn" id="vbtn-preview">Preview</button>
+      </div>
+      <button class="tb-btn" id="theme-toggle" title="Toggle theme"
+        style="font-size:16px;padding:4px 10px;">&#9790;</button>
+      <button class="copy-btn" id="copy-md-btn">Copy MD</button>
+      <button class="copy-btn" id="save-btn"
+        style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);">&#11123; Save</button>
     </div>
-    <button class="tb-btn" id="theme-toggle" title="Toggle theme" style="font-size:16px;padding:4px 10px;">&#9790;</button>
-    <button class="copy-btn" id="copy-md-btn">Copy MD</button>
-    <button class="copy-btn" id="save-btn" style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);">&#11123; Save</button>
-  </div>
-</div>
-
-<div id="find-bar">
-  <span style="color:var(--text-muted);font-size:12px;">Find:</span>
-  <input id="find-input" placeholder="search..." />
-  <button class="find-close">&#215;</button>
-</div>
-
-<div id="workspace">
-  <div class="pane" id="editor-pane">
-    <div class="pane-label">markdown</div>
-    <textarea id="editor" placeholder="Start writing markdown...&#10;&#10;# Hello World&#10;&#10;Type here and see it render live in the preview pane &#8594;" spellcheck="false"></textarea>
   </div>
 
-  <div id="divider"></div>
-
-  <div class="pane" id="preview-pane">
-    <div class="pane-label">preview</div>
-    <div id="preview"></div>
+  <div id="find-bar">
+    <span style="color:var(--text-muted);font-size:12px;">Find:</span>
+    <input id="find-input" placeholder="search..." />
+    <button class="find-close">&#215;</button>
   </div>
-</div>
 
-<div id="statusbar">
-  <span class="stat">Words: <span class="stat-val" id="stat-words">0</span></span>
-  <span class="stat">Lines: <span class="stat-val" id="stat-lines">0</span></span>
-  <span class="stat">Chars: <span class="stat-val" id="stat-chars">0</span></span>
-  <span class="stat">Ln <span class="stat-val stat-accent" id="stat-ln">1</span>, Col <span class="stat-val stat-accent" id="stat-col">1</span></span>
-  <span class="saved-indicator" id="saved-indicator">&#10003; Saved</span>
-</div>
+  <div id="workspace">
+    <div class="pane" id="editor-pane">
+      <div class="pane-label">markdown</div>
+      <textarea id="editor"
+        placeholder="Start writing markdown...&#10;&#10;# Hello World&#10;&#10;Type here and see it render live in the preview pane &#8594;"
+        spellcheck="false"></textarea>
+    </div>
 
-<script type="module" src="./src/main.js"></script>
+    <div id="divider"></div>
+
+    <div class="pane" id="preview-pane">
+      <div class="pane-label">preview</div>
+      <div id="preview"></div>
+    </div>
+  </div>
+
+  <div id="statusbar">
+    <span class="stat">Words: <span class="stat-val" id="stat-words">0</span></span>
+    <span class="stat">Lines: <span class="stat-val" id="stat-lines">0</span></span>
+    <span class="stat">Chars: <span class="stat-val" id="stat-chars">0</span></span>
+    <span class="stat">Ln <span class="stat-val stat-accent" id="stat-ln">1</span>, Col <span
+        class="stat-val stat-accent" id="stat-col">1</span></span>
+    <span class="saved-indicator" id="saved-indicator">&#10003; Saved</span>
+  </div>
+
+  <script type="module" src="./src/main.js"></script>
 </body>
+
 </html>
