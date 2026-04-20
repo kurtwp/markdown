@@ -40,7 +40,7 @@ The fastest way to write, preview, and organize markdown documents in a clean, m
    ```
 
 ### Usage
-Since the project uses ES Modules, you must run it from a local server:
+The project uses ES Modules, therefore index.html must be run from a local server:
 ```bash
 # Example using Python
 python -m http.server 8000
