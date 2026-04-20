@@ -53,7 +53,7 @@ Then open `http://localhost:8000/editor.html` in your browser.
 ## 📁 Project Structure
 ```text
 /
-├── editor.html      # Main application entry
+├── index.html       # Main application entry
 ├── src/
 │   ├── main.js      # Bootstrapper
 │   ├── state.js     # Shared application state
