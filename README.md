@@ -1,11 +1,11 @@
 # ▸ md Editor
+[![GitHub stars](https://img.shields.io/github/stars/kurtwp/template-generator-2d?style=flat-square&color=gold)](https://github.com/kurtwp/template-generator-2d/stargazers)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/kurtwp/template-generator-2d/pulls)
 
-A lightweight, professional Markdown editor with live preview, modular architecture, and a focused writing experience.
+A lightweight, Markdown editor with live preview, modular architecture, and a focused writing experience.<br>
 
-![Preview Placeholder](https://via.placeholder.com/1200x600/1a1d27/6c8aff?text=Markdown+Editor+Pro+Interface)
 
-## 🚀 One-Sentence Value Proposition
-The fastest way to write, preview, and organize markdown documents in a clean, modular, and scalable environment.
+![Preview Placeholder](markdown1.png)
 
 ## ✨ Core Features
 - **Live Preview**: Real-time rendering as you type using `marked.js`.
@@ -37,7 +37,7 @@ The fastest way to write, preview, and organize markdown documents in a clean, m
    ```
 
 ### Usage
-Since the project uses ES Modules, you must run it from a local server:
+The project uses ES Modules, therefore index.html must be run from a local server:
 ```bash
 # Example using Python
 python -m http.server 8000
@@ -50,7 +50,7 @@ Then open `http://localhost:8000/editor.html` in your browser.
 ## 📁 Project Structure
 ```text
 /
-├── editor.html      # Main application entry
+├── index.html       # Main application entry
 ├── src/
 │   ├── main.js      # Bootstrapper
 │   ├── state.js     # Shared application state
@@ -61,11 +61,8 @@ Then open `http://localhost:8000/editor.html` in your browser.
 ```
 
 ## 🤝 Contribution
-Brief guide on how to contribute:
-- Open an issue for bugs or feature requests.
 - Submit PRs for improvements.
-- Follow the `Architecture & Modularization` rules (keep scripts under 200 lines).
-
+  
 ---
 
 > [!TIP]
