@@ -13,7 +13,7 @@ export function setupEditor() {
     State.updateContent(editor.value);
     renderPreview();
     notifyStats();
-    
+
     clearTimeout(State.saveTimer);
     State.saveTimer = setTimeout(saveContent, 800);
   });
@@ -98,6 +98,38 @@ export function insertFence() {
   editor.dispatchEvent(new Event('input'));
 }
 
+export function insertTable() {
+  const editor = document.getElementById('editor');
+  const start = editor.selectionStart;
+  const tbl = '\n| Header 1 | Header 2 | Header 3 |\n| --- | --- | --- |\n| Cell | Cell | Cell |\n| Cell | Cell | Cell |\n';
+  editor.setRangeText(tbl, start, start, 'end');
+  editor.focus();
+  editor.dispatchEvent(new Event('input'));
+}
+
+export function insertChecklist() {
+  const editor = document.getElementById('editor');
+  const start = editor.selectionStart;
+  const val = editor.value;
+  const lineStart = val.lastIndexOf('\n', start - 1) + 1;
+  editor.setRangeText('- [ ] ', lineStart, lineStart, 'end');
+  editor.focus();
+  editor.dispatchEvent(new Event('input'));
+}
+
+export function insertImage() {
+  const editor = document.getElementById('editor');
+  const url = prompt('Image URL:', 'https://');
+  if (!url) return;
+  const alt = prompt('Alt text:', 'image') || 'image';
+  const start = editor.selectionStart;
+  const end = editor.selectionEnd;
+  const replacement = `![${alt}](${url})`;
+  editor.setRangeText(replacement, start, end, 'end');
+  editor.focus();
+  editor.dispatchEvent(new Event('input'));
+}
+
 export function insertLink() {
   const editor = document.getElementById('editor');
   const start = editor.selectionStart;
@@ -112,12 +144,12 @@ export function insertLink() {
 export function clearEditor() {
   const editor = document.getElementById('editor');
   const preview = document.getElementById('preview');
-  
+
   State.updateContent('');
   editor.value = '';
   preview.innerHTML = '';
   State.save();
-  
+
   // Notify stats
   window.dispatchEvent(new CustomEvent('statsUpdated', { detail: State.stats }));
 }
@@ -127,6 +159,39 @@ export function downloadFile() {
   const blob = new Blob([editor.value], { type: 'text/markdown' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'document.md';
+  const now = new Date();
+  const stamp = now.getFullYear() + '-' +
+    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+    String(now.getDate()).padStart(2, '0');
+  a.download = `document-${stamp}.md`;
   a.click();
+}
+
+export function copyHTML() {
+  const preview = document.getElementById('preview');
+  navigator.clipboard.writeText(preview.innerHTML).then(() => {
+    const btn = document.getElementById('copy-menu-btn') || document.getElementById('copy-html-btn');
+    if (!btn) return;
+    const orig = btn.textContent;
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+export function openFile() {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = '.md,.txt,.markdown';
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const editor = document.getElementById('editor');
+      editor.value = e.target.result;
+      editor.dispatchEvent(new Event('input'));
+    };
+    reader.readAsText(file);
+  });
+  input.click();
 }

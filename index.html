@@ -51,8 +51,11 @@
     .copy-btn,
     .view-btn,
     .view-toggle,
+    .toolbar-scrollable,
     #find-bar,
-    #divider {
+    #divider,
+    #find-input,
+    #replace-input {
       transition: background 0.25s ease, color 0.25s ease,
         border-color 0.25s ease;
     }
@@ -75,15 +78,20 @@
 
     /* TOOLBAR */
     #toolbar {
-      height: var(--toolbar-h);
+      height: auto;
+      min-height: var(--toolbar-h);
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       display: flex;
       align-items: center;
-      padding: 0 16px;
+      padding: 8px 16px;
       gap: 4px;
       flex-shrink: 0;
       position: relative;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: visible;
+      white-space: nowrap;
     }
 
     .toolbar-brand {
@@ -94,6 +102,36 @@
       text-transform: uppercase;
       margin-right: 12px;
       font-family: var(--font-mono);
+      flex-shrink: 0;
+    }
+
+    /* Toolbar scroll group — holds all the formatting buttons */
+    .toolbar-scrollable {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(156, 163, 175, 0.7) transparent;
+      flex: 1 1 0;
+      min-width: 0;
+      padding: 6px 0;
+      flex-wrap: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .toolbar-scrollable::-webkit-scrollbar {
+      height: 8px;
+    }
+
+    .toolbar-scrollable::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    .toolbar-scrollable::-webkit-scrollbar-thumb {
+      background: rgba(156, 163, 175, 0.6);
+      border-radius: 999px;
     }
 
     .toolbar-sep {
@@ -127,10 +165,6 @@
       color: var(--accent);
     }
 
-    .tb-btn[title]::after {
-      content: attr(title);
-    }
-
     .tb-icon {
       font-style: normal;
     }
@@ -140,6 +174,62 @@
       display: flex;
       align-items: center;
       gap: 8px;
+      flex-shrink: 0;
+    }
+
+    /* Hide less-critical right-side buttons at medium widths */
+    @media (max-width: 900px) {
+      #toolbar {
+        align-items: center;
+      }
+
+      .toolbar-scrollable {
+        flex: 1 1 auto;
+        width: auto;
+        overflow-x: auto;
+        overflow-y: hidden;
+        scrollbar-width: thin;
+      }
+
+      .toolbar-right {
+        width: auto;
+        margin-left: auto;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: 6px;
+        padding-top: 0;
+      }
+
+      .toolbar-right>* {
+        flex-shrink: 0;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .toolbar-brand {
+        display: none;
+      }
+
+      .toolbar-sep:not(.keep) {
+        display: none;
+      }
+
+      #save-btn {
+        display: none;
+      }
+
+      .toolbar-scrollable {
+        gap: 3px;
+      }
+
+      .tb-btn {
+        padding: 5px 6px;
+        font-size: 12px;
+      }
+
+      .toolbar-right {
+        justify-content: flex-end;
+      }
     }
 
     .view-toggle {
@@ -193,6 +283,52 @@
 
     .copy-btn:active {
       transform: scale(0.97);
+    }
+
+    .copy-dropdown {
+      position: relative;
+      display: inline-block;
+      overflow: visible;
+    }
+
+    .copy-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      top: calc(100% + 6px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+      padding: 4px 0;
+      min-width: 140px;
+      z-index: 1000;
+    }
+
+    .copy-menu.open {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .copy-menu-item {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: none;
+      border: none;
+      color: var(--text);
+      padding: 10px 14px;
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 13px;
+    }
+
+    .copy-menu-item+.copy-menu-item {
+      margin-top: 2px;
+    }
+
+    .copy-menu-item:hover {
+      background: var(--surface2);
     }
 
     /* MAIN PANES */
@@ -471,6 +607,13 @@
       font-size: 11px;
       color: var(--text-dim);
       flex-shrink: 0;
+      overflow-x: auto;
+      scrollbar-width: none;
+      white-space: nowrap;
+    }
+
+    #statusbar::-webkit-scrollbar {
+      display: none;
     }
 
     .stat {
@@ -503,9 +646,11 @@
     /* FIND BAR */
     #find-bar {
       display: none;
+      flex-direction: row;
       align-items: center;
-      gap: 8px;
-      padding: 6px 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+      padding: 8px 16px;
       background: var(--surface);
       border-bottom: 1px solid var(--border);
       font-size: 13px;
@@ -515,7 +660,8 @@
       display: flex;
     }
 
-    #find-input {
+    #find-input,
+    #replace-input {
       background: var(--bg);
       border: 1px solid var(--border);
       color: var(--text);
@@ -524,10 +670,11 @@
       font-size: 13px;
       font-family: var(--font-mono);
       outline: none;
-      width: 220px;
+      width: 190px;
     }
 
-    #find-input:focus {
+    #find-input:focus,
+    #replace-input:focus {
       border-color: var(--accent);
     }
 
@@ -544,6 +691,83 @@
     .find-close:hover {
       color: var(--text);
     }
+
+    .find-action-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 3px 10px;
+      border-radius: var(--radius);
+      font-size: 11px;
+      font-family: var(--font-sans);
+      font-weight: 500;
+      transition: background 0.15s, color 0.15s;
+      white-space: nowrap;
+    }
+
+    .find-action-btn:hover {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+
+    .find-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    #find-count-lbl {
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      min-width: 40px;
+    }
+
+    .find-sep {
+      width: 1px;
+      height: 20px;
+      background: var(--border);
+      margin: 0 4px;
+    }
+
+    .font-size-ctrl {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 2px 4px;
+    }
+
+    .font-size-ctrl .tb-btn {
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+
+    .font-size-select {
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      padding: 3px 6px;
+      min-width: 56px;
+      cursor: pointer;
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    .font-size-select:focus {
+      outline: 1px solid var(--accent);
+    }
+
+    #font-size-lbl {
+      display: none;
+    }
   </style>
 </head>
 
@@ -551,33 +775,62 @@
 
   <div id="toolbar">
     <span class="toolbar-brand">&#9656; md</span>
-    <div class="toolbar-sep"></div>
+    <div class="toolbar-sep keep"></div>
 
-    <!-- Heading buttons -->
-    <button class="tb-btn" data-action="insertAround" data-arg1="# " data-arg2="">H1</button>
-    <button class="tb-btn" data-action="insertAround" data-arg1="## " data-arg2="">H2</button>
-    <button class="tb-btn" data-action="insertAround" data-arg1="### " data-arg2="">H3</button>
+    <div class="toolbar-scrollable">
+      <!-- Heading buttons -->
+      <button class="tb-btn" data-action="insertAround" data-arg1="# " data-arg2="">H1</button>
+      <button class="tb-btn" data-action="insertAround" data-arg1="## " data-arg2="">H2</button>
+      <button class="tb-btn" data-action="insertAround" data-arg1="### " data-arg2="">H3</button>
 
-    <div class="toolbar-sep"></div>
+      <div class="toolbar-sep"></div>
 
-    <button class="tb-btn" data-action="insertAround" data-arg1="**" data-arg2="**" style="font-weight:800">B</button>
-    <button class="tb-btn" data-action="insertAround" data-arg1="*" data-arg2="*" style="font-style:italic">I</button>
-    <button class="tb-btn" data-action="insertAround" data-arg1="~~" data-arg2="~~"
-      style="text-decoration:line-through">S</button>
-    <button class="tb-btn" data-action="insertAround" data-arg1="`" data-arg2="`"
-      style="font-family:monospace">&lt;/&gt;</button>
+      <button class="tb-btn" data-action="insertAround" data-arg1="**" data-arg2="**" style="font-weight:800">B</button>
+      <button class="tb-btn" data-action="insertAround" data-arg1="*" data-arg2="*" style="font-style:italic">I</button>
+      <button class="tb-btn" data-action="insertAround" data-arg1="~~" data-arg2="~~"
+        style="text-decoration:line-through">S</button>
+      <button class="tb-btn" data-action="insertAround" data-arg1="`" data-arg2="`"
+        style="font-family:monospace">&lt;/&gt;</button>
 
-    <div class="toolbar-sep"></div>
+      <div class="toolbar-sep"></div>
 
-    <button class="tb-btn" data-action="insertLine" data-arg1="- ">&#8226; List</button>
-    <button class="tb-btn" data-action="insertLine" data-arg1="1. ">1. List</button>
-    <button class="tb-btn" data-action="insertLine" data-arg1="> ">&#10077; Quote</button>
-    <button class="tb-btn" data-action="insertFence">&#9635; Code</button>
-    <button class="tb-btn" data-action="insertLine" data-arg1="---">&#8213; HR</button>
-    <button class="tb-btn" data-action="insertLink">&#128279; Link</button>
-    <button class="tb-btn" id="clear-btn" style="color:var(--text-dim);">&#10006; Clear</button>
+      <button class="tb-btn" data-action="insertLine" data-arg1="- ">&#8226; List</button>
+      <button class="tb-btn" data-action="insertLine" data-arg1="1. ">1. List</button>
+      <button class="tb-btn" data-action="insertLine" data-arg1="> ">&#10077; Quote</button>
+      <button class="tb-btn" data-action="insertFence">&#9635; Code</button>
+      <button class="tb-btn" data-action="insertLine" data-arg1="---">&#8213; HR</button>
+      <button class="tb-btn" data-action="insertLink">&#128279; Link</button>
+      <button class="tb-btn" data-action="insertTable">&#8862; Table</button>
+      <button class="tb-btn" data-action="insertChecklist">&#9745; Tasks</button>
+      <button class="tb-btn" data-action="insertImage">&#128247; Image</button>
+
+      <div class="toolbar-sep"></div>
+
+      <button class="tb-btn" id="open-btn" title="Upload a saved Markdown file">Upload</button>
+      <button class="tb-btn" id="clear-btn" style="color:var(--text-dim);">&#10006; Clear</button>
+    </div>
 
     <div class="toolbar-right" style="margin-left:8px">
+      <!-- Font size control -->
+      <div class="font-size-ctrl">
+        <select id="font-size-select" class="font-size-select" title="Font size">
+          <option value="10">10px</option>
+          <option value="11">11px</option>
+          <option value="12">12px</option>
+          <option value="13">13px</option>
+          <option value="14">14px</option>
+          <option value="15">15px</option>
+          <option value="16">16px</option>
+          <option value="17">17px</option>
+          <option value="18">18px</option>
+          <option value="19">19px</option>
+          <option value="20">20px</option>
+          <option value="22">22px</option>
+          <option value="24">24px</option>
+          <option value="26">26px</option>
+          <option value="28">28px</option>
+        </select>
+      </div>
       <!-- View toggle -->
       <div class="view-toggle">
         <button class="view-btn" id="vbtn-editor">Editor</button>
@@ -586,16 +839,29 @@
       </div>
       <button class="tb-btn" id="theme-toggle" title="Toggle theme"
         style="font-size:16px;padding:4px 10px;">&#9790;</button>
-      <button class="copy-btn" id="copy-md-btn">Copy MD</button>
+      <button class="copy-btn" id="copy-md-btn" type="button">Copy MD</button>
+      <button class="copy-btn" id="copy-html-btn" type="button">Copy HTML</button>
       <button class="copy-btn" id="save-btn"
         style="background:var(--surface2);color:var(--accent);border:1px solid var(--border);">&#11123; Save</button>
     </div>
   </div>
 
   <div id="find-bar">
-    <span style="color:var(--text-muted);font-size:12px;">Find:</span>
-    <input id="find-input" placeholder="search..." />
-    <button class="find-close">&#215;</button>
+    <div class="find-row">
+      <span style="color:var(--text-muted);font-size:12px;min-width:52px;">Find:</span>
+      <input id="find-input" placeholder="search..." />
+      <span id="find-count-lbl"></span>
+      <button class="find-action-btn" id="find-prev-btn">&#8593;</button>
+      <button class="find-action-btn" id="find-next-btn">&#8595;</button>
+    </div>
+    <div class="find-sep"></div>
+    <div class="find-row">
+      <span style="color:var(--text-muted);font-size:12px;min-width:52px;">Replace:</span>
+      <input id="replace-input" placeholder="replace with..." />
+      <button class="find-action-btn" id="replace-btn">Replace</button>
+      <button class="find-action-btn" id="replace-all-btn">Replace All</button>
+    </div>
+    <button class="find-close" style="margin-left:auto;">&#215;</button>
   </div>
 
   <div id="workspace">
@@ -620,6 +886,7 @@
     <span class="stat">Chars: <span class="stat-val" id="stat-chars">0</span></span>
     <span class="stat">Ln <span class="stat-val stat-accent" id="stat-ln">1</span>, Col <span
         class="stat-val stat-accent" id="stat-col">1</span></span>
+    <span class="stat" style="color:var(--accent2);"><span id="stat-readtime">1 min read</span></span>
     <span class="saved-indicator" id="saved-indicator">&#10003; Saved</span>
   </div>
 
