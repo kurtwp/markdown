@@ -3,6 +3,7 @@ import { setupEditor } from './ui/editor.js';
 import { setupToolbar } from './ui/toolbar.js';
 import { setupPanes } from './ui/panes.js';
 import { setupStatusbar } from './ui/statusbar.js';
+import { setupFindbar } from './ui/findbar.js';
 
 const STARTER = `# Welcome to ▶ md Editor
 
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupToolbar();
   setupPanes();
   setupStatusbar();
+  setupFindbar();
 
   // Initial render
   window.dispatchEvent(new CustomEvent('statsUpdated', { detail: State.stats }));

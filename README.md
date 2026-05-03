@@ -8,12 +8,14 @@ A lightweight, Markdown editor with live preview, modular architecture, and a fo
 ![Preview Placeholder](markdown1.png)
 
 ## ✨ Core Features
-- **Live Preview**: Real-time rendering as you type using `marked.js`.
+- **Live Preview**: Real-time rendering as you type using `marked.js` with debounced performance optimization.
 - **Split View & Toggles**: Switch between Editor, Preview, and Split views seamlessly.
 - **Modular Architecture**: Built with modern ES Modules for scalability (State, UI, Physics, Interactions).
-- **Toolbar Shortcuts**: Quick commands for headers, bold, italics, lists, and code fences.
-- **Auto-Save**: Automatic persistence to `localStorage` to prevent data loss.
-- **Statistics**: Word count, line count, and cursor position tracking.
+- **Find & Replace**: Built-in search utility with regex and replace-all capabilities (accessible via toolbar or `Ctrl+F`).
+- **Toolbar Shortcuts**: Quick commands for headers, bold, italics, lists, tables, images, and code fences.
+- **Font & Theme Controls**: Adjustable editor font sizes and persistent Light/Dark themes.
+- **Auto-Save & Exports**: Automatic persistence to `localStorage` and timestamped file exports to prevent data loss.
+- **Statistics**: Word count, line count, read-time estimates, and cursor position tracking.
 
 ## 🛠️ Tech Stack
 - **Languages**: HTML5, CSS3, JavaScript (ES6+ Modules)

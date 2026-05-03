@@ -4,14 +4,24 @@ export function setupEditor() {
   const editor = document.getElementById('editor');
   const preview = document.getElementById('preview');
 
-  marked.setOptions({ breaks: true, gfm: true });
+  if (typeof marked !== 'undefined') {
+    marked.setOptions({ breaks: true, gfm: true });
+  } else {
+    console.warn('marked.js is not loaded. Markdown preview will be disabled.');
+  }
 
   editor.value = State.content;
   renderPreview();
 
+  let renderTimer;
   editor.addEventListener('input', () => {
     State.updateContent(editor.value);
-    renderPreview();
+    
+    clearTimeout(renderTimer);
+    renderTimer = setTimeout(() => {
+      renderPreview();
+    }, 150);
+
     notifyStats();
 
     clearTimeout(State.saveTimer);
@@ -29,14 +39,20 @@ export function setupEditor() {
   });
 
   function renderPreview() {
-    preview.innerHTML = marked.parse(State.content);
+    if (typeof marked !== 'undefined') {
+      preview.innerHTML = marked.parse(State.content);
+    } else {
+      preview.innerHTML = `<div style="color:red; padding:20px;">Error: Markdown parser not loaded.</div>`;
+    }
   }
 
   function saveContent() {
     State.save();
     const ind = document.getElementById('saved-indicator');
-    ind.classList.add('show');
-    setTimeout(() => ind.classList.remove('show'), 1500);
+    if (ind) {
+      ind.classList.add('show');
+      setTimeout(() => ind.classList.remove('show'), 1500);
+    }
   }
 
   function notifyStats() {
@@ -49,6 +65,19 @@ export function setupEditor() {
       const start = editor.selectionStart;
       editor.setRangeText('  ', start, start, 'end');
       editor.dispatchEvent(new Event('input'));
+      State.pushHistory(true);
+    }
+    if (e.key === 'z' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      if (e.shiftKey) {
+        State.redo();
+      } else {
+        State.undo();
+      }
+    }
+    if (e.key === 'y' && (e.ctrlKey || e.metaKey)) {
+      e.preventDefault();
+      State.redo();
     }
     if (e.key === 'f' && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
@@ -63,7 +92,7 @@ export function setupEditor() {
 }
 
 export function insertAround(before, after) {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const start = editor.selectionStart;
   const end = editor.selectionEnd;
   const sel = editor.value.substring(start, end);
@@ -75,50 +104,61 @@ export function insertAround(before, after) {
     editor.selectionEnd = start + before.length + 4;
   }
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function insertLine(prefix) {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const start = editor.selectionStart;
   const val = editor.value;
   const lineStart = val.lastIndexOf('\n', start - 1) + 1;
   editor.setRangeText(prefix, lineStart, lineStart, 'end');
   editor.focus();
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function insertFence() {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const start = editor.selectionStart;
   const end = editor.selectionEnd;
-  const sel = editor.value.substring(start, end);
-  const replacement = '\n```\n' + (sel || 'code here') + '\n```\n';
+  const val = editor.value;
+  const sel = val.substring(start, end);
+  
+  // Check if we are at the start of a line
+  const isStartOfLine = start === 0 || val[start - 1] === '\n';
+  const prefix = isStartOfLine ? '```\n' : '\n```\n';
+  
+  const replacement = prefix + (sel || 'code here') + '\n```\n';
   editor.setRangeText(replacement, start, end, 'select');
   editor.focus();
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function insertTable() {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const start = editor.selectionStart;
   const tbl = '\n| Header 1 | Header 2 | Header 3 |\n| --- | --- | --- |\n| Cell | Cell | Cell |\n| Cell | Cell | Cell |\n';
   editor.setRangeText(tbl, start, start, 'end');
   editor.focus();
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function insertChecklist() {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const start = editor.selectionStart;
   const val = editor.value;
   const lineStart = val.lastIndexOf('\n', start - 1) + 1;
   editor.setRangeText('- [ ] ', lineStart, lineStart, 'end');
   editor.focus();
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function insertImage() {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const url = prompt('Image URL:', 'https://');
   if (!url) return;
   const alt = prompt('Alt text:', 'image') || 'image';
@@ -128,10 +168,11 @@ export function insertImage() {
   editor.setRangeText(replacement, start, end, 'end');
   editor.focus();
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function insertLink() {
-  const editor = document.getElementById('editor');
+  const editor = State.editor;
   const start = editor.selectionStart;
   const end = editor.selectionEnd;
   const sel = editor.value.substring(start, end) || 'link text';
@@ -139,15 +180,17 @@ export function insertLink() {
   editor.setRangeText(replacement, start, end, 'end');
   editor.focus();
   editor.dispatchEvent(new Event('input'));
+  State.pushHistory(true);
 }
 
 export function clearEditor() {
-  const editor = document.getElementById('editor');
-  const preview = document.getElementById('preview');
+  const editor = State.editor;
+  const preview = State.preview;
 
   State.updateContent('');
   editor.value = '';
-  preview.innerHTML = '';
+  if (preview) preview.innerHTML = '';
+  State.pushHistory(true);
   State.save();
 
   // Notify stats
@@ -155,8 +198,7 @@ export function clearEditor() {
 }
 
 export function downloadFile() {
-  const editor = document.getElementById('editor');
-  const blob = new Blob([editor.value], { type: 'text/markdown' });
+  const blob = new Blob([State.content], { type: 'text/markdown' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   const now = new Date();
@@ -168,7 +210,8 @@ export function downloadFile() {
 }
 
 export function copyHTML() {
-  const preview = document.getElementById('preview');
+  const preview = State.preview;
+  if (!preview) return;
   navigator.clipboard.writeText(preview.innerHTML).then(() => {
     const btn = document.getElementById('copy-menu-btn') || document.getElementById('copy-html-btn');
     if (!btn) return;
@@ -187,9 +230,10 @@ export function openFile() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (e) => {
-      const editor = document.getElementById('editor');
+      const editor = State.editor;
       editor.value = e.target.result;
       editor.dispatchEvent(new Event('input'));
+      State.pushHistory(true);
     };
     reader.readAsText(file);
   });
